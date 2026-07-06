@@ -1,0 +1,22 @@
+# Render Blueprint — deploy with "New > Blueprint" pointing at this repo,
+# or just create a Web Service with runtime "Docker" and defaults.
+services:
+  - type: web
+    name: coverdrive
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      # Set in the Render dashboard (leave unset for 60 req/hr unauthenticated).
+      # A no-scope token lifts GitHub to 5,000 req/hr.
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: CACHE_TTL_MS
+        value: "600000"
+    # The cards-rated counter lives in /app/server/data. On the free plan the
+    # filesystem is ephemeral (counter resets on deploy). On a paid plan,
+    # uncomment to persist it:
+    # disk:
+    #   name: coverdrive-data
+    #   mountPath: /app/server/data
+    #   sizeGB: 1
