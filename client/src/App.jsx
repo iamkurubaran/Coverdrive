@@ -71,7 +71,7 @@ export default function App() {
         </a>
         <a
           className="gh-pill"
-          href="https://github.com"
+          href="https://github.com/iamkurubaran/Coverdrive"
           target="_blank"
           rel="noreferrer"
           aria-label="GitHub"
