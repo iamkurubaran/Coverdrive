@@ -2,7 +2,7 @@ import express from "express";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { fetchProfile, cacheStats } from "./github.js";
+import { fetchProfile, fetchContributions, cacheStats } from "./github.js";
 import { buildCard } from "./engine.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -68,8 +68,11 @@ app.get("/api/card/:username", async (req, res) => {
     return res.status(400).json({ error: "Enter a valid GitHub username." });
   }
   try {
-    const { user, repos, events } = await fetchProfile(username);
-    const card = buildCard(user, repos, events);
+    const [{ user, repos, events }, contributions] = await Promise.all([
+      fetchProfile(username),
+      fetchContributions(username),
+    ]);
+    const card = buildCard(user, repos, events, contributions);
     bumpCounter();
     res.setHeader("Cache-Control", "public, max-age=300");
     res.json(card);

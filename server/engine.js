@@ -36,7 +36,7 @@ function starsFrom(score) {
 
 // ---------------------------------------------------------------------------
 
-export function buildCard(user, repos, events) {
+export function buildCard(user, repos, events, contributions = null) {
   const originals = repos.filter((r) => !r.fork);
   const totalStars = originals.reduce((s, r) => s + (r.stargazers_count || 0), 0);
   const totalForks = originals.reduce((s, r) => s + (r.forks_count || 0), 0);
@@ -49,7 +49,7 @@ export function buildCard(user, repos, events) {
   const accountYears = (Date.now() - new Date(user.created_at).getTime()) / YEAR_MS;
 
   const pushEvents = events.filter((e) => e.type === "PushEvent");
-  const commitCount = pushEvents.reduce(
+  const eventCommits = pushEvents.reduce(
     (s, e) => s + (e.payload?.commits?.length || 0),
     0
   );
@@ -58,7 +58,14 @@ export function buildCard(user, repos, events) {
     (e) => e.type === "PullRequestReviewEvent"
   ).length;
   const prCount = events.filter((e) => e.type === "PullRequestEvent").length;
-  const recentActivity = events.length;
+
+  // The contribution calendar (full year, always populated for active users)
+  // is a far stronger signal than the public events feed, which only covers
+  // ~90 days and misses much activity. Prefer it when available.
+  const yearContribs = contributions?.total ?? null;
+  const commitCount = Math.max(eventCommits, yearContribs ?? 0);
+  const recentActivity =
+    yearContribs != null ? Math.round(yearContribs / 4) : events.length;
 
   // ---- Six headline attributes (cricket batting order) ----
   const attributes = {
@@ -67,7 +74,10 @@ export function buildCard(user, repos, events) {
     FLD: band(totalForks, 40),         // Fielding  — reach in the field (forks)
     TEC: band(languages.length, 6),    // Technique — range of shots (languages)
     EXP: band(accountYears, 6),        // Experience— years in the game
-    STA: band(recentActivity, 60),     // Stamina   — recent public activity
+    STA:
+      yearContribs != null
+        ? band(yearContribs, 500)      // Stamina   — contributions this year
+        : band(events.length, 60),     //            (fallback: recent events)
   };
   const overall = Math.round(
     Object.values(attributes).reduce((a, b) => a + b, 0) / 6
@@ -75,14 +85,21 @@ export function buildCard(user, repos, events) {
 
   // ---- Scouting metrics (detailed bar list) ----
   const metrics = [
-    { label: "Commits", detail: `${fmt(commitCount)} commits`, score: band(commitCount, 40) },
+    {
+      label: "Commits",
+      detail:
+        yearContribs != null
+          ? `${fmt(yearContribs)} this year`
+          : `${fmt(eventCommits)} commits`,
+      score: yearContribs != null ? band(yearContribs, 500) : band(eventCommits, 40),
+    },
     { label: "Stars earned", detail: `${fmt(totalStars)} stars`, score: band(totalStars, 120) },
     { label: "Highest score", detail: `${fmt(topRepoStars)} stars`, score: band(topRepoStars, 90) },
     { label: "Followers", detail: `${fmt(user.followers)} followers`, score: band(user.followers, 200) },
     { label: "Languages", detail: `${languages.length} languages`, score: band(languages.length, 6) },
     { label: "Issues", detail: `${issueCount} issues`, score: band(issueCount, 20) },
     { label: "Reviews", detail: `${reviewCount} reviews`, score: band(reviewCount, 15) },
-    { label: "Contributions", detail: `${fmt(recentActivity)} recent`, score: band(recentActivity, 60) },
+    { label: "Repos shipped", detail: `${originalCount} originals`, score: band(originalCount, 25) },
   ];
 
   return {
@@ -126,6 +143,7 @@ export function buildCard(user, repos, events) {
       totalForks,
       accountYears,
     }),
+    heatmap: contributions, // { total, weeks: [[{date,count,level}|null x7]] } | null
   };
 }
 

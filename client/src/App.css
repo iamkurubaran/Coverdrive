@@ -130,6 +130,8 @@ main {
   display: flex;
   align-items: center;
   gap: 10px;
+  text-decoration: none;
+  color: inherit;
 }
 
 .ball-mark { width: 26px; height: 26px; }
@@ -437,6 +439,60 @@ main {
 
 /* ---------- Report layout --------------------------------------------------------- */
 
+/* ---- Player route chrome ---- */
+
+.report-top {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--fg);
+  text-decoration: none;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.back-link:hover {
+  border-color: var(--gold);
+  background: rgba(232, 199, 102, 0.07);
+}
+
+.back-link .flip { transform: rotate(180deg); }
+.back-link.solo { margin-top: 18px; }
+
+.report-path {
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.page-status {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 64px 0 96px;
+  text-align: center;
+}
+
 .report {
   position: relative;
   z-index: 1;
@@ -551,14 +607,16 @@ main {
   --ry: 0deg;
   --mx: 50%;
   --my: 18%;
+  --card-ink: #f5f0e3;
+  --card-soft: rgba(214, 205, 182, 0.62);
   position: relative;
   width: min(340px, 86vw);
   aspect-ratio: 5 / 7.1;
   transform: rotateX(var(--rx)) rotateY(var(--ry));
   transform-style: preserve-3d;
   transition: transform 0.18s ease-out;
-  filter: drop-shadow(0 24px 48px rgba(0, 0, 0, 0.55))
-          drop-shadow(0 0 42px color-mix(in srgb, var(--glow) 26%, transparent));
+  filter: drop-shadow(0 26px 48px rgba(0, 0, 0, 0.65))
+          drop-shadow(0 0 26px color-mix(in srgb, var(--glow) 13%, transparent));
   animation: card-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
   container-type: inline-size;
 }
@@ -576,39 +634,69 @@ main {
   );
 }
 
-/* Accent rim layer behind the cream face */
+/* Metallic tier trim behind the dark face */
 .fcard::before {
   content: "";
   position: absolute;
   inset: 0;
   clip-path: var(--shield);
-  background: linear-gradient(180deg, var(--glow), var(--accent));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--glow) 80%, #ffffff) 0%,
+    var(--accent) 34%,
+    color-mix(in srgb, var(--accent) 55%, #000) 78%,
+    color-mix(in srgb, var(--glow) 65%, #000) 100%
+  );
 }
 
 .fcard-inner {
   position: absolute;
-  inset: 3px;
+  inset: 2.5px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12% 9% 8%;
-  background: linear-gradient(180deg, #f7f1e2 0%, #efe6cf 55%, #e3d5b4 100%);
+  padding: 11.5% 9% 10.5%;
+  background:
+    radial-gradient(
+      120% 55% at 50% 0%,
+      color-mix(in srgb, var(--accent) 17%, transparent),
+      transparent 58%
+    ),
+    radial-gradient(
+      90% 40% at 50% 104%,
+      color-mix(in srgb, var(--accent) 12%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(168deg, #1c1f26 0%, #13151b 46%, #0a0b0f 100%);
   clip-path: var(--shield);
-  color: #5a4a1f;
+  color: var(--card-ink);
+}
+
+/* Faint pinstripes, clipped by the shield */
+.fcard-inner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 12px,
+    rgba(255, 255, 255, 0.022) 12px 13px
+  );
 }
 
 .fcard-holo {
   position: absolute;
-  inset: 3px;
+  inset: 2.5px;
   z-index: 2;
   pointer-events: none;
   background: radial-gradient(
     circle at var(--mx) var(--my),
-    rgba(255, 255, 255, 0.5),
-    rgba(255, 255, 255, 0.08) 28%,
-    transparent 55%
+    color-mix(in srgb, var(--glow) 30%, transparent),
+    color-mix(in srgb, var(--glow) 7%, transparent) 30%,
+    transparent 58%
   );
-  mix-blend-mode: soft-light;
+  mix-blend-mode: screen;
   clip-path: var(--shield);
 }
 
@@ -616,7 +704,7 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   margin-bottom: 2%;
 }
 
@@ -624,14 +712,16 @@ main {
   font-size: 10px;
   letter-spacing: 4px;
   color: var(--accent);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--glow) 50%, transparent);
 }
 
 .crest-ball {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: var(--ball-red);
   border: 1px solid #8f0a20;
+  box-shadow: 0 0 8px rgba(200, 16, 46, 0.5);
 }
 
 .fcard-top {
@@ -645,7 +735,7 @@ main {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: 5px;
   min-width: 30%;
 }
 
@@ -654,14 +744,16 @@ main {
   font-weight: 800;
   font-size: clamp(44px, 13cqw, 58px);
   line-height: 0.9;
+  color: var(--accent);
+  text-shadow: 0 0 22px color-mix(in srgb, var(--glow) 38%, transparent);
 }
 
 .fc-pos {
   font-family: var(--display);
   font-weight: 700;
   font-size: 18px;
-  letter-spacing: 1px;
-  border-bottom: 1px solid rgba(90, 74, 31, 0.35);
+  letter-spacing: 1.5px;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
   padding-bottom: 3px;
 }
 
@@ -670,10 +762,14 @@ main {
 .fc-lang {
   font-family: var(--display);
   font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 1px;
-  color: #8a7a4a;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--card-soft);
   text-transform: uppercase;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fcard-portrait {
@@ -687,8 +783,11 @@ main {
   height: clamp(110px, 38cqw, 150px);
   border-radius: 50%;
   object-fit: cover;
+  background: #0d0f13;
   border: 2px solid var(--accent);
-  box-shadow: 0 6px 18px rgba(90, 74, 31, 0.25);
+  box-shadow:
+    0 0 0 5px rgba(255, 255, 255, 0.04),
+    0 10px 26px rgba(0, 0, 0, 0.55);
 }
 
 .fcard-name {
@@ -696,7 +795,7 @@ main {
   font-family: var(--display);
   font-weight: 800;
   font-size: clamp(26px, 9cqw, 34px);
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -707,7 +806,12 @@ main {
   width: 62%;
   height: 1px;
   margin: 3% 0 4%;
-  background: rgba(90, 74, 31, 0.35);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent) 65%, transparent),
+    transparent
+  );
 }
 
 .fcard-attrs {
@@ -724,7 +828,10 @@ main {
   gap: 6px;
 }
 
-.fc-divider { width: 1px; background: rgba(90, 74, 31, 0.3); }
+.fc-divider {
+  width: 1px;
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
 
 .fc-attr {
   display: flex;
@@ -738,26 +845,29 @@ main {
   font-size: 21px;
   min-width: 30px;
   text-align: right;
+  color: var(--card-ink);
 }
 
 .fc-key {
   font-family: var(--display);
   font-weight: 600;
-  font-size: 15px;
-  letter-spacing: 1px;
-  color: #8a7a4a;
+  font-size: 14px;
+  letter-spacing: 1.5px;
+  color: var(--card-soft);
 }
 
 .fcard-foot {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   margin-top: auto;
+  padding-bottom: 1%;
   font-family: var(--display);
   font-weight: 600;
-  font-size: 11px;
+  font-size: 9.5px;
   letter-spacing: 2.5px;
-  color: #8a7a4a;
+  color: var(--card-soft);
+  white-space: nowrap;
 }
 
 .fcard-foot-dot {
@@ -845,6 +955,91 @@ main {
   text-transform: uppercase;
   color: var(--muted);
 }
+
+.panel-note {
+  margin-left: auto;
+  font-family: var(--body);
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  text-transform: none;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ---------- Innings map (commit heatmap) -------------------------------------------- */
+
+.heatmap-scroll {
+  overflow-x: auto;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+
+.heatmap {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: max-content;
+}
+
+.hm-months {
+  display: grid;
+  grid-template-columns: repeat(53, 12px);
+  gap: 0 3px;
+  height: 14px;
+  position: relative;
+}
+
+.hm-months span {
+  grid-row: 1;
+  grid-column: var(--col);
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.hm-grid {
+  display: flex;
+  gap: 3px;
+}
+
+.hm-week {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.hm-day {
+  width: 12px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.hm-day.hm-pad { background: transparent; }
+.hm-day.l1 { background: #123f27; }
+.hm-day.l2 { background: #1e7a46; }
+.hm-day.l3 { background: #2fa35f; box-shadow: 0 0 6px rgba(47, 163, 95, 0.25); }
+.hm-day.l4 { background: #57cd84; box-shadow: 0 0 8px rgba(87, 205, 132, 0.4); }
+
+.hm-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.hm-legend span:first-child { margin-right: 4px; }
+.hm-legend span:last-child { margin-left: 4px; }
+.hm-legend .hm-day { width: 10px; height: 10px; }
 
 .tick {
   width: 22px;

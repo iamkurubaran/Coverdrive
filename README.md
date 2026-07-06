@@ -1,4 +1,4 @@
-# 🏏 Coverdrive v3
+# 🏏 Coverdrive v4
 
 **Your GitHub, rated for the World XI — out of 99.**
 
@@ -7,7 +7,7 @@ rated shield card, attributes, earned playstyle badges, a Cricinfo-style
 career-statistics table, and detailed scouting metrics. A cricket-themed take
 on GitFut — same idea, different sport.
 
-**v3 is a client + server app.** All GitHub calls go through a Node.js server
+**v4 is a client + server app.** All GitHub calls go through a Node.js server
 with caching and optional token auth, so the browser never hits GitHub's
 unauthenticated rate limits.
 
@@ -27,7 +27,7 @@ coverdrive/
 └─ client/                   # React + Vite (mobile-first)
    ├─ index.html
    └─ src/
-      ├─ App.jsx             # hero, search, live counter, report layout
+      ├─ App.jsx             # router + home page (hero, search, counter)\n      ├─ PlayerPage.jsx      # /player/:username scouting report route\n      ├─ Heatmap.jsx         # Innings Map — commit contribution heatmap
       ├─ PlayerCard.jsx      # 3D holographic shield card
       ├─ CareerTable.jsx     # Cricinfo-style scorecard
       ├─ ShareBar.jsx        # X / LinkedIn / copy link / PNG exports
@@ -41,7 +41,7 @@ coverdrive/
 
 | Route | Purpose |
 |---|---|
-| `GET /api/card/:username` | Full computed scouting report (JSON) |
+| `GET /api/card/:username` | Full scouting report incl. contribution heatmap (JSON) |
 | `GET /api/stats` | Live "cards rated" counter |
 | `GET /api/avatar?url=` | CORS-safe avatar proxy for canvas image export |
 | `GET /api/health` | Cache + auth status |
@@ -111,6 +111,11 @@ GITHUB_TOKEN=ghp_xxx npm start
   format column, exactly like a live scorecard.
 - **Scouting Metrics** — Commits, Stars, Highest score, Followers, Languages,
   Issues, Reviews, Contributions, each with a value and an animated 0–99 bar.
+- **Innings Map** — your GitHub contribution heatmap: one square per day for
+  the last 12 months, pitch-green intensity, horizontally scrollable. Parsed
+  server-side from GitHub's public calendar page (no token needed).
+- **Routes** — search lives at `/`; every report gets its own shareable page
+  at `/player/:username` (old `?u=` links redirect there).
 - **Live counter** — total cards rated, persisted server-side.
 
 ## How the ratings map

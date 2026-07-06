@@ -20,10 +20,19 @@ async function get(path) {
   return body;
 }
 
-export function fetchCard(username) {
+// Session cache so navigating home → /player/:u doesn't refetch.
+const cardCache = new Map(); // usernameLower -> { at, card }
+const CARD_TTL = 5 * 60 * 1000;
+
+export async function fetchCard(username) {
   const clean = username.trim().replace(/^@/, "");
-  if (!clean) return Promise.reject(new Error("Enter a GitHub username."));
-  return get(`/api/card/${encodeURIComponent(clean)}`);
+  if (!clean) throw new Error("Enter a GitHub username.");
+  const key = clean.toLowerCase();
+  const hit = cardCache.get(key);
+  if (hit && Date.now() - hit.at < CARD_TTL) return hit.card;
+  const card = await get(`/api/card/${encodeURIComponent(clean)}`);
+  cardCache.set(key, { at: Date.now(), card });
+  return card;
 }
 
 export function fetchStats() {

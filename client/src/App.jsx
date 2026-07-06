@@ -1,56 +1,51 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchCard, fetchStats } from "./api";
-import PlayerCard from "./PlayerCard";
-import CareerTable from "./CareerTable";
-import ShareBar from "./ShareBar";
+import PlayerPage from "./PlayerPage";
 import { Icon } from "./icons";
 import "./App.css";
 
 const SUGGESTED = ["torvalds", "sindresorhus", "gaearon"];
 
-export default function App() {
-  const [username, setUsername] = useState("");
-  const [card, setCard] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [cardsRated, setCardsRated] = useState(null);
-  const [showHow, setShowHow] = useState(false);
-  const reportRef = useRef(null);
+/* ---------- Tiny router ----------------------------------------------------
+   Two routes, no dependency:
+     /                  → home (hero + search)
+     /player/:username  → full scouting report                              */
 
-  async function scout(name) {
-    const target = (name ?? username).trim();
-    if (!target) return;
-    setLoading(true);
-    setError("");
-    try {
-      const result = await fetchCard(target);
-      setCard(result);
-      setUsername(result.username);
-      const url = new URL(window.location);
-      url.searchParams.set("u", result.username);
-      window.history.replaceState(null, "", url);
-      fetchStats().then((s) => setCardsRated(s.cardsRated)).catch(() => {});
-      requestAnimationFrame(() =>
-        reportRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-      );
-    } catch (err) {
-      setCard(null);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // Live counter + deep link (?u=username) on load.
+function usePath() {
+  const [path, setPath] = useState(window.location.pathname);
   useEffect(() => {
-    fetchStats().then((s) => setCardsRated(s.cardsRated)).catch(() => {});
+    const onPop = () => setPath(window.location.pathname);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+  function navigate(to, { replace = false } = {}) {
+    if (replace) window.history.replaceState(null, "", to);
+    else window.history.pushState(null, "", to);
+    setPath(new URL(to, window.location.origin).pathname);
+    window.scrollTo({ top: 0 });
+  }
+  return [path, navigate];
+}
+
+function matchPlayer(path) {
+  const m = path.match(/^\/player\/([A-Za-z0-9-]{1,39})\/?$/);
+  return m ? m[1] : null;
+}
+
+export default function App() {
+  const [path, navigate] = usePath();
+  const [showHow, setShowHow] = useState(false);
+
+  // Legacy deep links (?u=name) redirect to the player route.
+  useEffect(() => {
     const u = new URLSearchParams(window.location.search).get("u");
-    if (u) {
-      setUsername(u);
-      scout(u);
+    if (u && !matchPlayer(window.location.pathname)) {
+      navigate(`/player/${encodeURIComponent(u)}`, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const player = matchPlayer(path);
 
   return (
     <div className="app">
@@ -61,12 +56,19 @@ export default function App() {
       </div>
 
       <header className="topbar">
-        <div className="brand">
+        <a
+          className="brand"
+          href="/"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("/");
+          }}
+        >
           <BallMark />
           <span className="brand-name">
             COVER<em>DRIVE</em>
           </span>
-        </div>
+        </a>
         <a
           className="gh-pill"
           href="https://github.com"
@@ -80,192 +82,14 @@ export default function App() {
       </header>
 
       <main>
-        {/* ---- Hero ---- */}
-        <section className="hero">
-          <div className="hero-eyebrow">
-            <span>GITHUB</span>
-            <span className="eyebrow-x">×</span>
-            <span className="eyebrow-gold">WORLD XI ’26</span>
-          </div>
-
-          <h1 className="hero-title">
-            GET SELECTED<span className="full-stop">.</span>
-          </h1>
-          <p className="hero-sub">
-            Your GitHub stats, turned into a World-XI-style cricket card — rated
-            out of 99.
-          </p>
-
-          <form
-            className="search"
-            onSubmit={(e) => {
-              e.preventDefault();
-              scout();
-            }}
-          >
-            <div className="search-field">
-              <span className="at" aria-hidden>@</span>
-              <input
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="github username"
-                spellCheck="false"
-                autoComplete="off"
-                autoCapitalize="none"
-                aria-label="GitHub username"
-              />
-            </div>
-            <button className="scout-btn" type="submit" disabled={loading}>
-              {loading ? "REVIEWING…" : "SCOUT"}
-              {!loading && <Icon name="arrow" size={16} />}
-            </button>
-          </form>
-
-          <div className="suggested">
-            <span>try</span>
-            {SUGGESTED.map((s) => (
-              <button key={s} onClick={() => scout(s)} disabled={loading}>
-                {s}
-              </button>
-            ))}
-            <span className="suggested-own">· or your own</span>
-          </div>
-
-          <div className="hero-meta">
-            {cardsRated != null && (
-              <span className="live-counter">
-                <span className="live-dot" aria-hidden />
-                <strong>{cardsRated.toLocaleString()}</strong>&nbsp;cards rated
-              </span>
-            )}
-            <button className="how-link" onClick={() => setShowHow(true)}>
-              how it works ↗
-            </button>
-          </div>
-
-          {error && (
-            <p className="error" role="alert">
-              {error}
-            </p>
-          )}
-        </section>
-
-        {/* ---- Loading ---- */}
-        {loading && (
-          <div className="umpire">
-            <span className="umpire-bails" aria-hidden />
-            Third umpire reviewing…
-          </div>
-        )}
-
-        {/* ---- Report ---- */}
-        {card && !loading && (
-          <div className="report" ref={reportRef}>
-            <div className="scout-head">
-              <div className="scout-eyebrow">Scout Report</div>
-              <h2 className="scout-name">{card.name}</h2>
-              <div className="scout-meta">
-                <span className="pos-badge">{card.role.abbr}</span>
-                <span className="scout-tier">{titleCase(card.tier.name)}</span>
-                <span className="dot">|</span>
-                <span className="scout-handle">@{card.username}</span>
-                <span className="dot">|</span>
-                <span className="lang-chip">{card.topLanguage}</span>
-              </div>
-              <p className="scout-trait">
-                <strong>{card.trait.tag}</strong> {card.trait.note}
-              </p>
-            </div>
-
-            <div className="report-side">
-              <PlayerCard card={card} />
-              <ShareBar card={card} />
-            </div>
-
-            <div className="report-main">
-            <section className="panel">
-              <div className="panel-title">
-                <span className="tick" aria-hidden />
-                Attributes
-              </div>
-              <Row label="Shot range" value={<Stars n={card.shotRange} />} />
-              <Row label="Reverse sweep" value={<Stars n={card.reverseSweep} />} />
-              <Row
-                label="Work rate"
-                value={<strong className="mono-val">{card.workRate}</strong>}
-              />
-              <Row
-                label="Style"
-                value={<strong className="mono-val">{card.style}</strong>}
-                last
-              />
-            </section>
-
-            <section className="panel">
-              <div className="panel-title">
-                <span className="tick" aria-hidden />
-                Playstyles
-              </div>
-              <div className="playstyles">
-                {card.playstyles.map((ps) => (
-                  <div className={`ps ${ps.earned ? "on" : "off"}`} key={ps.key}>
-                    <Icon name={ps.icon} size={18} />
-                    <span>{ps.key}</span>
-                    {ps.earned && <span className="ps-plus">+</span>}
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <CareerTable career={card.career} name={card.name} />
-
-            <section className="panel">
-              <div className="panel-title">
-                <span className="tick" aria-hidden />
-                Scouting Metrics
-              </div>
-              {card.metrics.map((m, i) => (
-                <div className="metric" key={m.label} style={{ "--i": i }}>
-                  <div className="metric-head">
-                    <span className="metric-label">{m.label}</span>
-                    <span className="metric-detail">{m.detail}</span>
-                    <span className="metric-score">{m.score}</span>
-                  </div>
-                  <div className="metric-bar">
-                    <span style={{ "--w": `${m.score}%` }} />
-                  </div>
-                </div>
-              ))}
-            </section>
-
-            <a
-              className="profile-link"
-              href={card.profileUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              VIEW @{card.username.toUpperCase()} ON GITHUB
-              <Icon name="arrow" size={14} />
-            </a>
-            </div>
-          </div>
-        )}
-
-        {/* ---- Empty state ---- */}
-        {!card && !loading && (
-          <div className="empty">
-            <div className="pitch" aria-hidden>
-              <span className="crease c1" />
-              <span className="crease c2" />
-              <span className="stumps">
-                <i /><i /><i />
-              </span>
-            </div>
-            <p>
-              Step up to the crease — enter a username to generate a full
-              scouting report.
-            </p>
-          </div>
+        {player ? (
+          <PlayerPage
+            key={player.toLowerCase()}
+            username={player}
+            navigate={navigate}
+          />
+        ) : (
+          <HomePage navigate={navigate} onHow={() => setShowHow(true)} />
         )}
       </main>
 
@@ -282,6 +106,128 @@ export default function App() {
   );
 }
 
+/* ---------- Home ---------- */
+
+function HomePage({ navigate, onHow }) {
+  const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [cardsRated, setCardsRated] = useState(null);
+
+  useEffect(() => {
+    fetchStats().then((s) => setCardsRated(s.cardsRated)).catch(() => {});
+  }, []);
+
+  async function scout(name) {
+    const target = (name ?? username).trim().replace(/^@/, "");
+    if (!target || loading) return;
+    setLoading(true);
+    setError("");
+    try {
+      const card = await fetchCard(target); // warms the cache
+      navigate(`/player/${encodeURIComponent(card.username)}`);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <>
+      <section className="hero">
+        <div className="hero-eyebrow">
+          <span>GITHUB</span>
+          <span className="eyebrow-x">×</span>
+          <span className="eyebrow-gold">WORLD XI ’26</span>
+        </div>
+
+        <h1 className="hero-title">
+          GET SELECTED<span className="full-stop">.</span>
+        </h1>
+        <p className="hero-sub">
+          Your GitHub stats, turned into a World-XI-style cricket card — rated
+          out of 99.
+        </p>
+
+        <form
+          className="search"
+          onSubmit={(e) => {
+            e.preventDefault();
+            scout();
+          }}
+        >
+          <div className="search-field">
+            <span className="at" aria-hidden>@</span>
+            <input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="github username"
+              spellCheck="false"
+              autoComplete="off"
+              autoCapitalize="none"
+              aria-label="GitHub username"
+            />
+          </div>
+          <button className="scout-btn" type="submit" disabled={loading}>
+            {loading ? "REVIEWING…" : "SCOUT"}
+            {!loading && <Icon name="arrow" size={16} />}
+          </button>
+        </form>
+
+        <div className="suggested">
+          <span>try</span>
+          {SUGGESTED.map((s) => (
+            <button key={s} onClick={() => scout(s)} disabled={loading}>
+              {s}
+            </button>
+          ))}
+          <span className="suggested-own">· or your own</span>
+        </div>
+
+        <div className="hero-meta">
+          {cardsRated != null && (
+            <span className="live-counter">
+              <span className="live-dot" aria-hidden />
+              <strong>{cardsRated.toLocaleString()}</strong>&nbsp;cards rated
+            </span>
+          )}
+          <button className="how-link" onClick={onHow}>
+            how it works ↗
+          </button>
+        </div>
+
+        {error && (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        )}
+      </section>
+
+      {loading ? (
+        <div className="umpire">
+          <span className="umpire-bails" aria-hidden />
+          Third umpire reviewing…
+        </div>
+      ) : (
+        <div className="empty">
+          <div className="pitch" aria-hidden>
+            <span className="crease c1" />
+            <span className="crease c2" />
+            <span className="stumps">
+              <i /><i /><i />
+            </span>
+          </div>
+          <p>
+            Step up to the crease — enter a username to generate a full
+            scouting report.
+          </p>
+        </div>
+      )}
+    </>
+  );
+}
+
 /* ---------- Small components ---------- */
 
 function BallMark() {
@@ -292,29 +238,6 @@ function BallMark() {
       <path d="M41 8 Q48 32 41 56" fill="none" stroke="#f6e7c8" strokeWidth="2.5" strokeDasharray="4 3" />
     </svg>
   );
-}
-
-function Row({ label, value, last }) {
-  return (
-    <div className={`row ${last ? "row-last" : ""}`}>
-      <span className="row-label">{label}</span>
-      <span className="row-value">{value}</span>
-    </div>
-  );
-}
-
-function Stars({ n }) {
-  return (
-    <span className="stars" aria-label={`${n} out of 5`}>
-      {[1, 2, 3, 4, 5].map((i) => (
-        <span key={i} className={i <= n ? "s on" : "s"}>★</span>
-      ))}
-    </span>
-  );
-}
-
-function titleCase(s) {
-  return s.charAt(0) + s.slice(1).toLowerCase();
 }
 
 function HowItWorks({ onClose }) {
@@ -349,7 +272,7 @@ function HowItWorks({ onClose }) {
             <div><dt>FLD — Fielding</dt><dd>total forks caught</dd></div>
             <div><dt>TEC — Technique</dt><dd>range of languages</dd></div>
             <div><dt>EXP — Experience</dt><dd>years in the game</dd></div>
-            <div><dt>STA — Stamina</dt><dd>recent public activity</dd></div>
+            <div><dt>STA — Stamina</dt><dd>contributions in the last year</dd></div>
           </dl>
           <p>
             Overall is the mean of the six. Tiers: 90+ Legend · 82+ Platinum ·
@@ -359,7 +282,9 @@ function HowItWorks({ onClose }) {
           </p>
           <p>
             The career table reads like a scorecard: Tests are your all-time
-            record, ODIs the last 12 months, T20s the last 90 days.
+            record, ODIs the last 12 months, T20s the last 90 days. The
+            Innings Map is your commit heatmap — a year of deliveries, one
+            square per day.
           </p>
         </div>
       </div>

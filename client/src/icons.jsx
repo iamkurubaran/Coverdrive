@@ -1,8 +1,9 @@
 // Inline stroke icon set (currentColor) — playstyles + UI chrome.
-export function Icon({ name, size = 20 }) {
+export function Icon({ name, size = 20, className }) {
   const p = {
     width: size,
     height: size,
+    className,
     viewBox: "0 0 24 24",
     fill: "none",
     stroke: "currentColor",

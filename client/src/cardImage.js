@@ -48,32 +48,51 @@ function drawShieldCard(ctx, card, avatar, x, y, w) {
   const X = (fx) => x + fx * w;
   const Y = (fy) => y + fy * h;
 
-  // Outer glow
+  // Trim fill with a soft drop shadow
   ctx.save();
-  ctx.shadowColor = card.tier.glow;
-  ctx.shadowBlur = w * 0.09;
+  ctx.shadowColor = "rgba(0,0,0,0.65)";
+  ctx.shadowBlur = w * 0.07;
+  ctx.shadowOffsetY = w * 0.03;
   shieldPath(ctx, x, y, w, h);
-  ctx.fillStyle = "#0d0e11";
+  ctx.fillStyle = card.tier.accent;
   ctx.fill();
   ctx.restore();
 
-  // Cream face
-  const face = ctx.createLinearGradient(x, y, x, y + h);
-  face.addColorStop(0, "#f7f1e2");
-  face.addColorStop(0.55, "#efe6cf");
-  face.addColorStop(1, "#e3d5b4");
-  shieldPath(ctx, x, y, w, h);
+  // Dark face inset inside the metallic trim
+  const inset = Math.max(3, w * 0.006);
+  const fx = x + inset;
+  const fy = y + inset;
+  const fw = w - inset * 2;
+  const fh = h - inset * 2;
+
+  const face = ctx.createLinearGradient(fx, fy, fx, fy + fh);
+  face.addColorStop(0, "#1c1f26");
+  face.addColorStop(0.46, "#13151b");
+  face.addColorStop(1, "#0a0b0f");
+  shieldPath(ctx, fx, fy, fw, fh);
   ctx.fillStyle = face;
   ctx.fill();
 
-  // Accent border
-  shieldPath(ctx, x, y, w, h);
-  ctx.lineWidth = Math.max(3, w * 0.008);
-  ctx.strokeStyle = card.tier.accent;
-  ctx.stroke();
+  // Accent tint bleeding from the top edge + faint pinstripes
+  ctx.save();
+  shieldPath(ctx, fx, fy, fw, fh);
+  ctx.clip();
+  const tint = ctx.createRadialGradient(
+    fx + fw / 2, fy, 0,
+    fx + fw / 2, fy, fh * 0.6
+  );
+  tint.addColorStop(0, hexAlpha(card.tier.accent, 0.22));
+  tint.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = tint;
+  ctx.fillRect(fx, fy, fw, fh);
+  ctx.fillStyle = "rgba(255,255,255,0.02)";
+  for (let sx = fx; sx < fx + fw; sx += w * 0.038) {
+    ctx.fillRect(sx, fy, 1.5, fh);
+  }
+  ctx.restore();
 
-  const ink = "#5a4a1f";
-  const inkSoft = "#8a7a4a";
+  const ink = "#f5f0e3";
+  const inkSoft = "rgba(214,205,182,0.66)";
 
   // Crest
   ctx.fillStyle = card.tier.accent;
@@ -92,28 +111,38 @@ function drawShieldCard(ctx, card, avatar, x, y, w) {
   if (avatar) {
     ctx.drawImage(avatar, acx - ar, acy - ar, ar * 2, ar * 2);
   } else {
-    ctx.fillStyle = "#cbbd97";
+    ctx.fillStyle = "#20242c";
     ctx.fillRect(acx - ar, acy - ar, ar * 2, ar * 2);
   }
   ctx.restore();
   ctx.beginPath();
   ctx.arc(acx, acy, ar, 0, Math.PI * 2);
-  ctx.lineWidth = w * 0.006;
+  ctx.lineWidth = Math.max(2.5, w * 0.006);
   ctx.strokeStyle = card.tier.accent;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(acx, acy, ar + w * 0.014, 0, Math.PI * 2);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "rgba(255,255,255,0.1)";
   ctx.stroke();
 
   // Rating / role / flag / language column
   ctx.textAlign = "left";
-  ctx.fillStyle = ink;
+  ctx.save();
+  ctx.shadowColor = hexAlpha(card.tier.glow, 0.45);
+  ctx.shadowBlur = w * 0.03;
+  ctx.fillStyle = card.tier.accent;
   ctx.font = `700 ${w * 0.17}px ${DISPLAY}`;
   ctx.fillText(String(card.overall), X(0.16), Y(0.28));
+  ctx.restore();
+  ctx.fillStyle = ink;
   ctx.font = `600 ${w * 0.058}px ${DISPLAY}`;
   ctx.fillText(card.role.abbr, X(0.165), Y(0.335));
   ctx.font = `${w * 0.06}px ${BODY}`;
   ctx.fillText(card.country?.flag || "🌍", X(0.16), Y(0.41));
   ctx.font = `600 ${w * 0.036}px ${DISPLAY}`;
   ctx.fillStyle = inkSoft;
-  ctx.fillText(card.topLanguage.toUpperCase(), X(0.16), Y(0.462));
+  ctx.fillText(card.topLanguage.toUpperCase(), X(0.16), Y(0.462), w * 0.3);
 
   // Surname
   const surname = card.name.trim().split(/\s+/).slice(-1)[0].toUpperCase();
@@ -123,7 +152,11 @@ function drawShieldCard(ctx, card, avatar, x, y, w) {
   ctx.fillText(surname, X(0.5), Y(0.575), w * 0.72);
 
   // Rule
-  ctx.strokeStyle = "rgba(90,74,31,0.35)";
+  const rule = ctx.createLinearGradient(X(0.22), 0, X(0.78), 0);
+  rule.addColorStop(0, "rgba(0,0,0,0)");
+  rule.addColorStop(0.5, hexAlpha(card.tier.accent, 0.65));
+  rule.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.strokeStyle = rule;
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(X(0.22), Y(0.605));
@@ -145,7 +178,7 @@ function drawShieldCard(ctx, card, avatar, x, y, w) {
       ctx.fillText(String(card.attributes[k]), X(numX), yy);
       ctx.textAlign = "left";
       ctx.fillStyle = inkSoft;
-      ctx.font = `600 ${w * 0.046}px ${DISPLAY}`;
+      ctx.font = `600 ${w * 0.044}px ${DISPLAY}`;
       ctx.fillText(k, X(keyX), yy);
     });
   }
@@ -153,17 +186,24 @@ function drawShieldCard(ctx, card, avatar, x, y, w) {
   drawCol(right, 0.68, 0.71);
 
   // Column divider
-  ctx.strokeStyle = "rgba(90,74,31,0.3)";
+  ctx.strokeStyle = hexAlpha(card.tier.accent, 0.35);
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.moveTo(X(0.5), startY - rowH * 0.7);
   ctx.lineTo(X(0.5), startY + rowH * 2.2);
   ctx.stroke();
 
-  // Footer: tier · format
+  // Footer: tier · format (kept narrow so the shield tip never clips it)
   ctx.textAlign = "center";
   ctx.fillStyle = inkSoft;
-  ctx.font = `600 ${w * 0.034}px ${DISPLAY}`;
-  ctx.fillText(`${card.tier.name}  ·  ${card.format}`, X(0.5), Y(0.9));
+  ctx.font = `600 ${w * 0.028}px ${DISPLAY}`;
+  ctx.fillText(`${card.tier.name} · ${card.format}`, X(0.5), Y(0.878));
+}
+
+// "#rrggbb" + alpha → rgba() string.
+function hexAlpha(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
 }
 
 function drawBackground(ctx, w, h) {

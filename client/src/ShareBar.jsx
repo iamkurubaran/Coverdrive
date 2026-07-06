@@ -11,7 +11,7 @@ export default function ShareBar({ card }) {
     setTimeout(() => setDone(""), 1800);
   }
 
-  const shareUrl = `${window.location.origin}${window.location.pathname}?u=${card.username}`;
+  const shareUrl = `${window.location.origin}/player/${encodeURIComponent(card.username)}`;
   const shareText = `${card.name} is a ${card.overall}-rated ${card.tier.name} ${card.role.name} on Coverdrive 🏏`;
 
   function postX() {

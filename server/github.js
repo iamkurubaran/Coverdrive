@@ -95,6 +95,87 @@ export async function fetchProfile(username) {
   return { user, repos, events };
 }
 
+// ---------------------------------------------------------------------------
+// Contribution calendar (the green heatmap). GitHub serves it as public HTML
+// at github.com/users/:u/contributions — no token required. We parse the
+// day cells (date + level) and their tooltips (exact counts) and return a
+// week-bucketed grid the client can render. Failures return null; the
+// heatmap simply doesn't show.
+
+function attr(tag, name) {
+  const m = tag.match(new RegExp(`${name}="([^"]*)"`));
+  return m ? m[1] : null;
+}
+
+export async function fetchContributions(username) {
+  const key = `contrib:${username.toLowerCase()}`;
+  const cached = cacheGet(key);
+  if (cached) return cached;
+
+  try {
+    const res = await fetch(
+      `https://github.com/users/${encodeURIComponent(username)}/contributions`,
+      { headers: { "User-Agent": "coverdrive-app", Accept: "text/html" } }
+    );
+    if (!res.ok) return null;
+    const html = await res.text();
+
+    const days = [];
+    const byId = new Map();
+    const tdRe = /<td[^>]*ContributionCalendar-day[^>]*>/g;
+    let m;
+    while ((m = tdRe.exec(html))) {
+      const tag = m[0];
+      const date = attr(tag, "data-date");
+      if (!date) continue;
+      const day = { date, level: Number(attr(tag, "data-level") || 0), count: 0 };
+      days.push(day);
+      const id = attr(tag, "id");
+      if (id) byId.set(id, day);
+    }
+    if (!days.length) return null;
+
+    // Exact counts live in <tool-tip for="cell-id">N contributions on …</tool-tip>
+    const tipRe = /<tool-tip[^>]*for="([^"]+)"[^>]*>([^<]*)<\/tool-tip>/g;
+    let sawCounts = false;
+    while ((m = tipRe.exec(html))) {
+      const day = byId.get(m[1]);
+      if (!day) continue;
+      const n = m[2].match(/^([\d,]+)\s+contribution/i);
+      if (n) {
+        day.count = Number(n[1].replace(/,/g, ""));
+        sawCounts = true;
+      }
+    }
+    // Markup drift fallback: estimate counts from the 0–4 intensity level.
+    if (!sawCounts) {
+      const est = [0, 2, 5, 9, 14];
+      for (const d of days) d.count = est[d.level] || 0;
+    }
+
+    days.sort((a, b) => (a.date < b.date ? -1 : 1));
+    const total = days.reduce((s, d) => s + d.count, 0);
+
+    // Bucket into GitHub-style week columns (Sunday-first).
+    const weeks = [];
+    let week = new Array(new Date(`${days[0].date}T00:00:00Z`).getUTCDay()).fill(null);
+    for (const d of days) {
+      week.push(d);
+      if (week.length === 7) {
+        weeks.push(week);
+        week = [];
+      }
+    }
+    if (week.length) weeks.push(week);
+
+    const result = { total, weeks, estimated: !sawCounts };
+    cacheSet(key, result);
+    return result;
+  } catch {
+    return null;
+  }
+}
+
 export function cacheStats() {
   return { entries: cache.size, ttlMs: TTL_MS };
 }
