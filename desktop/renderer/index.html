@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; connect-src https://gitcoverdrive.onrender.com; img-src 'self' https://gitcoverdrive.onrender.com data:; style-src 'self'; script-src 'self'"
+    />
+    <title>Coverdrive</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="sky" aria-hidden="true">
+      <span class="floodlight fl-a"></span>
+      <span class="floodlight fl-b"></span>
+    </div>
+
+    <header class="topbar" id="topbar">
+      <button class="brand" id="brand-btn" title="Home">
+        <svg class="ball-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="32" r="26" fill="#c8102e" />
+          <path d="M23 8 Q16 32 23 56" fill="none" stroke="#f6e7c8" stroke-width="2.5" stroke-dasharray="4 3" />
+          <path d="M41 8 Q48 32 41 56" fill="none" stroke="#f6e7c8" stroke-width="2.5" stroke-dasharray="4 3" />
+        </svg>
+        <span class="brand-name">COVER<em>DRIVE</em></span>
+      </button>
+      <span class="live-counter" id="counter" hidden>
+        <span class="live-dot" aria-hidden="true"></span>
+        <strong id="counter-num">0</strong>&nbsp;cards rated
+      </span>
+    </header>
+
+    <main>
+      <!-- Home: hero + search -->
+      <section id="view-home">
+        <div class="hero">
+          <div class="hero-eyebrow">
+            <span>GITHUB</span>
+            <span class="eyebrow-x">×</span>
+            <span class="eyebrow-gold">WORLD XI ’26</span>
+          </div>
+          <h1 class="hero-title">GET SELECTED<span class="full-stop">.</span></h1>
+          <p class="hero-sub">
+            Your GitHub stats, turned into a World-XI-style cricket card — rated out of 99.
+          </p>
+
+          <form class="search" id="search-form">
+            <div class="search-field">
+              <span class="at" aria-hidden="true">@</span>
+              <input
+                id="username"
+                placeholder="github username"
+                spellcheck="false"
+                autocomplete="off"
+                autocapitalize="none"
+                aria-label="GitHub username"
+              />
+            </div>
+            <button class="scout-btn" id="scout-btn" type="submit">SCOUT</button>
+          </form>
+
+          <div class="suggested" id="suggested">
+            <span>try</span>
+          </div>
+
+          <p class="error" id="error" role="alert" hidden></p>
+        </div>
+
+        <div class="empty" id="empty">
+          <div class="pitch" aria-hidden="true">
+            <span class="crease c1"></span>
+            <span class="crease c2"></span>
+            <span class="stumps"><i></i><i></i><i></i></span>
+          </div>
+          <p>Step up to the crease — enter a username to generate a full scouting report.</p>
+        </div>
+
+        <div class="umpire" id="umpire" hidden>
+          <span class="umpire-bails" aria-hidden="true"></span>
+          Third umpire reviewing…
+        </div>
+      </section>
+
+      <!-- Report: card + full scouting panels -->
+      <section id="view-report" hidden>
+        <button class="back-link" id="back-btn">← scout another player</button>
+        <div class="report" id="report"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span class="footer-stripe" aria-hidden="true"></span>
+      <p id="footer-note">
+        Attributes derived from public GitHub stats via the Coverdrive server.
+        Unofficial &amp; just for fun — not affiliated with the ICC or GitHub.
+      </p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
