@@ -1,0 +1,13 @@
+{
+  "name": "coverdrive",
+  "private": true,
+  "version": "3.0.0",
+  "description": "Your GitHub, rated for the World XI — cricket scouting reports out of 99. Client + Node.js server.",
+  "scripts": {
+    "install:all": "npm --prefix server install && npm --prefix client install",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "build": "npm --prefix client run build",
+    "start": "npm --prefix server start"
+  }
+}

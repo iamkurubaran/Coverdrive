@@ -1,0 +1,17 @@
+{
+  "name": "coverdrive-server",
+  "private": true,
+  "version": "3.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --watch index.js",
+    "start": "NODE_ENV=production node index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
