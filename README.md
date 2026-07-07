@@ -1,4 +1,4 @@
-# 🏏 Coverdrive v4
+# 🏏 Coverdrive
 
 **Your GitHub, rated for the World XI — out of 99.**
 
