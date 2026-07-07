@@ -1,13 +1,13 @@
 # 🏏 Coverdrive
 
-**Your GitHub, rated for the World XI — out of 99.**
+**Your GitHub, rated for the World XI out of 99.**
 
 Coverdrive turns any GitHub profile into a full cricket scouting report: a
 rated shield card, attributes, earned playstyle badges, a Cricinfo-style
 career-statistics table, and detailed scouting metrics. A cricket-themed take
-on GitFut — same idea, different sport.
+on GitFut https://gitfut.com same idea, different sport.
 
-**v4 is a client + server app.** All GitHub calls go through a Node.js server
+**It is a client + server app.** All GitHub calls go through a Node.js server
 with caching and optional token auth, so the browser never hits GitHub's
 unauthenticated rate limits.
 
