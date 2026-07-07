@@ -1,0 +1,36 @@
+# Coverdrive
+
+> Coverdrive turns any GitHub profile into a World-XI-style cricket scouting
+> report: a rated shield card out of 99, attributes, earned playstyle badges,
+> a Cricinfo-style career-statistics table, and a commit contribution heatmap.
+> A cricket-themed take on GitFut — same idea, different sport.
+
+Coverdrive is a free, open-source web app. Enter any GitHub username on the
+home page and it produces a shareable cricket card and full scouting report
+for that developer. Cards can be exported as PNG images (including a story
+format) and shared to X or LinkedIn.
+
+## How it works
+
+- All GitHub data is fetched through a Node.js/Express server with caching
+  and optional token auth, so browsers never hit GitHub's unauthenticated
+  rate limits.
+- A rating engine converts GitHub activity (repos, stars, commits, languages,
+  contribution history) into cricket-style attributes and an overall rating
+  out of 99.
+- Player pages live at /player/:username and are rendered client-side with
+  React.
+
+## Key pages
+
+- [Home](https://gitcoverdrive.onrender.com/): search any GitHub username to
+  get scouted.
+- [Player report](https://gitcoverdrive.onrender.com/player/iamkurubaran):
+  example scouting report (replace the username with any GitHub handle).
+
+## Project
+
+- [Source code](https://github.com/iamkurubaran/Coverdrive): MIT-style open
+  source; client (React + Vite), server (Node.js + Express), plus desktop,
+  mobile, and browser-extension companions.
+- [Author](https://github.com/iamkurubaran): iamkurubaran.
