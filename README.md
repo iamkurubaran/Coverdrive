@@ -7,6 +7,8 @@ rated shield card, attributes, earned playstyle badges, a Cricinfo-style
 career-statistics table, and detailed scouting metrics. A cricket-themed take
 on GitFut https://gitfut.com same idea, different sport.
 
+<a href="https://chai4.me/iamkurubaran" target="_blank" title="Support iamkurubaran on Chai4Me" style="display:inline-flex;flex-direction:column;align-items:center;justify-content:center;background:#ffffff;padding:8px 32px;border-radius:16px;text-decoration:none;border:1px solid #e5e7eb;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);transition:transform 0.2s;"><img src="https://chai4.me/icons/wordmark.png" alt="Chai4Me" style="height:32px;object-fit:contain;margin-bottom:4px;"/><span style="color:#6b7280;font-family:sans-serif;font-size:14px;font-weight:600;">@iamkurubaran</span></a>
+
 **It is a client + server app.** All GitHub calls go through a Node.js server
 with caching and optional token auth, so the browser never hits GitHub's
 unauthenticated rate limits.
@@ -27,7 +29,9 @@ coverdrive/
 └─ client/                   # React + Vite (mobile-first)
    ├─ index.html
    └─ src/
-      ├─ App.jsx             # router + home page (hero, search, counter)\n      ├─ PlayerPage.jsx      # /player/:username scouting report route\n      ├─ Heatmap.jsx         # Innings Map — commit contribution heatmap
+      ├─ App.jsx             # router + home page (hero, search, counter)
+      ├─ PlayerPage.jsx      # /player/:username scouting report route
+      ├─ Heatmap.jsx         # Innings Map: commit contribution heatmap
       ├─ PlayerCard.jsx      # 3D holographic shield card
       ├─ CareerTable.jsx     # Cricinfo-style scorecard
       ├─ ShareBar.jsx        # X / LinkedIn / copy link / PNG exports
@@ -48,7 +52,7 @@ coverdrive/
 
 The server caches every GitHub response for 10 minutes (configurable via
 `CACHE_TTL_MS`), persists the cards-rated counter to `server/data/counter.json`,
-and — when `client/dist` exists — serves the built client, so production is a
+and, when `client/dist` exists, serves the built client, so production is a
 single Node process.
 
 ---
@@ -71,7 +75,7 @@ npm run dev:client            # http://localhost:5173 (proxies /api to :8787)
 ### Kill the rate limits entirely
 
 The server works unauthenticated (60 req/hr, softened by caching). For real
-headroom, give it a token — no scopes needed:
+headroom, give it a token (no scopes needed):
 
 ```bash
 GITHUB_TOKEN=ghp_yourtoken npm run dev:server
@@ -91,36 +95,36 @@ GITHUB_TOKEN=ghp_xxx npm start
 
 ## The report
 
-- **Shield card** — overall out of 99 with a count-up animation, cricket role
+- **Shield card**: overall out of 99 with a count-up animation, cricket role
   badge, nationality flag (derived from profile location), top language,
   avatar, and six headline attributes. Tilts in 3D toward the pointer with a
   holographic sheen; respects `prefers-reduced-motion`.
-- **Scout report header** — name, role, tier, handle, language, and a trait
+- **Scout report header**: name, role, tier, handle, language, and a trait
   line (*GENERATIONAL TALENT*, *WICKET MACHINE*, *RISING PROSPECT*…).
-- **Share bar** — post to X, share to LinkedIn, copy a deep link
+- **Share bar**: post to X, share to LinkedIn, copy a deep link
   (`?u=username` loads the card directly), **Download** a rendered PNG,
   **Copy image** to the clipboard, and a 1080×1920 **Story format** export.
-  All images are drawn on a canvas by hand — no capture libraries.
-- **Attributes** — Shot range and Reverse sweep as ★ ratings, Work rate
+  All images are drawn on a canvas by hand, no capture libraries.
+- **Attributes**: Shot range and Reverse sweep as ★ ratings, Work rate
   (bat / field), and a batting Style (Aggressor, Enforcer, Anchor…).
-- **Playstyles** — Crowd Puller, Star Magnet, Six Machine, Marathon Innings,
+- **Playstyles**: Crowd Puller, Star Magnet, Six Machine, Marathon Innings,
   Rapid Fire, Veteran, Workhorse, All-Rounder. Earned badges glow gold.
-- **Career Statistics** — a Cricinfo-style batting & fielding scorecard.
+- **Career Statistics**: a Cricinfo-style batting & fielding scorecard.
   Formats are recency buckets: **Tests** all-time, **ODIs** last 12 months,
   **T20s** last 90 days. Horizontally scrollable on phones with a sticky
   format column, exactly like a live scorecard.
-- **Scouting Metrics** — Commits, Stars, Highest score, Followers, Languages,
-  Issues, Reviews, Contributions, each with a value and an animated 0–99 bar.
-- **Innings Map** — your GitHub contribution heatmap: one square per day for
+- **Scouting Metrics**: Commits, Stars, Highest score, Followers, Languages,
+  Issues, Reviews, Contributions, each with a value and an animated 0-99 bar.
+- **Innings Map**: your GitHub contribution heatmap, one square per day for
   the last 12 months, pitch-green intensity, horizontally scrollable. Parsed
   server-side from GitHub's public calendar page (no token needed).
-- **Routes** — search lives at `/`; every report gets its own shareable page
+- **Routes**: search lives at `/`; every report gets its own shareable page
   at `/player/:username` (old `?u=` links redirect there).
-- **Live counter** — total cards rated, persisted server-side.
+- **Live counter**: total cards rated, persisted server-side.
 
 ## How the ratings map
 
-Every score derives from a public GitHub signal, squashed into a **40–99**
+Every score derives from a public GitHub signal, squashed into a **40-99**
 band with diminishing returns.
 
 | Attribute | Cricket meaning | GitHub signal |
@@ -154,7 +158,7 @@ handled.
 
 ## Notes
 
-- Only public data is used. Unofficial and just for fun not affiliated with
+- Only public data is used. Unofficial and just for fun, not affiliated with
   the ICC or GitHub.
 - "Commits / Issues / Reviews" read from the recent public events feed, so
   they reflect recent activity rather than all-time totals.

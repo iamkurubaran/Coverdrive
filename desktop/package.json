@@ -15,6 +15,9 @@
   },
   "build": {
     "appId": "com.coverdrive.desktop",
+    "toolsets": {
+      "nsis": "1.2.1"
+    },
     "productName": "Coverdrive",
     "directories": {
       "buildResources": "build",
