@@ -154,7 +154,7 @@ handled.
 
 ## Notes
 
-- Only public data is used. Unofficial and just for fun — not affiliated with
+- Only public data is used. Unofficial and just for fun not affiliated with
   the ICC or GitHub.
 - "Commits / Issues / Reviews" read from the recent public events feed, so
   they reflect recent activity rather than all-time totals.
